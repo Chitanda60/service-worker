@@ -18,8 +18,20 @@ self.addEventListener('install', event => {
 })
 
 // 监听 更新激活新worker
-self.addEventListener('activate', event => {
+this.addEventListener('activate', function(event) {
+	var cacheWhitelist = ['v2']
 
+	// 确保清理操作在第一次的请求操作之前
+	event.waitUntil(
+		caches.keys().then((keyList) => {
+			// promise阻塞其他事件
+			return Promise.all(keyList.map((key) => {
+				if (cacheWhitelist.indexOf(key) === -1) {
+					return caches.delete(key)
+				}
+			}))
+		})
+	)
 })
 
 // 监听 网络请求(仅对被控制的资源) 劫持HTTP请求
